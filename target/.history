@@ -1,3 +1,5 @@
 update
 reload
 jetty-restart
+reload
+jetty-restart

@@ -9,21 +9,16 @@ import scala.xml.{NodeSeq,Text}
 import model._
 import util._
 import net.liftweb.mapper._
-
 import net.liftweb.http.js.JsCmds._
 import net.liftweb.http.js._
 import net.liftweb.http.js.JE._
+import scala.xml._ // not found: type Elem
 
 
 class BooksForm extends StatefulSnippet with Loggable{
 
   private var title = ""
-  private var description = ""
-
-  // capture from whence the user came so we
-  // can send them back
-  //private val whence = S.referer openOr "/"
-
+  private var description = "" 
   private val book = Books.create
 
   def dispatch = {
@@ -33,63 +28,105 @@ class BooksForm extends StatefulSnippet with Loggable{
 
   def add( xhtml: NodeSeq ): NodeSeq = {
 
-        def doProcess() {
-          val book : Books =  Books.create.title(title)
-                                                .description(description)
-                                                .timecreated(Helpers.timeNow.getTime)
-                                                .published(true)
-          book.validate match{
-             case Nil =>
-                S.notice("book is add")
-                book.saveMe
-                //S.redirectTo("/")
-             case errors : List[FieldError] =>
-                S.error(errors)
-          }
-        }
+    def doProcess() {
+      val book : Books =  Books.create.title(title)
+      .description(description)
+      .timecreated(Helpers.timeNow.getTime)
+      .published(true)
+      book.validate match{
+        case Nil =>
+          S.notice("book is add")
+          book.saveMe
+          //S.redirectTo("/")
+        case errors : List[FieldError] =>
+          S.error(errors)
+      }
+    }
 
-        def check_title(in:String): JsCmd = {
+    def ajaxLiveTitle(value: String, func: String => JsCmd, attrs: (String, String)*): Elem = {
+      S.fmapFunc(S.SFuncHolder(func)) { funcName =>
+        (attrs.foldLeft(<input
+              type="text"
+              value="Enter title"
+              onfocus="if (this.value == 'Enter title') {this.value = '';}"
+              onblur="if (this.value == '') {this.value = 'Enter title';}"
+                        />)(_ % _)) %
+        ("onkeyup" -> SHtml.makeAjaxCall(
+            JsRaw("'" +
+                  funcName +
+                  "=' + " +
+                  "encodeURIComponent(this.value)")
+          )
+        )
+      }
+    }       
+    
 
-           val title = in.trim
-           val book : Books =  Books.create.title(title)
+    def check_title(in:String, field: String, errorFieldId: String) = {
+      
+      val title = in.trim
+      val book : Books =  Books.create.title(title)
+      
+      book.title.validate match{
+        case Nil =>
+          <p class="success" id={errorFieldId}>Valid</p>
+        case errors : List[FieldError] =>
+          S.error(errors)
+          <p class="error" id={errorFieldId}><lift:Msg id="books_title" /></p>
+      }
+      
+    }        
+    
+    
+    def ajaxLiveDescription(value: String, func: String => JsCmd, attrs: (String, String)*): Elem = {
+      S.fmapFunc(S.SFuncHolder(func)) { funcName =>
+        (attrs.foldLeft(<input
+              type="text"
+              value="Enter description"
+              onfocus="if (this.value == 'Enter description') {this.value = '';}"
+              onblur="if (this.value == '') {this.value = 'Enter description';}"
+                        />)(_ % _)) %
+        ("onkeyup" -> SHtml.makeAjaxCall(
+            JsRaw("'" +
+                  funcName +
+                  "=' + " +
+                  "encodeURIComponent(this.value)")
+          )
+        )
+      }
+    }   
+    
+    
+    def check_description(in:String, field: String, errorFieldId: String) = {
 
-           book.title.validate match{
-              case Nil =>
-                 JE.JsRaw(""" 
-                             $("#title_message").html("You are good to go");
-                             $('#submit').attr("disabled", false);
-                 """).cmd
-                 
-              case errors : List[FieldError] =>
-                 //S.error(errors)
-                 println("errors: " + errors)
-                 JE.JsRaw("""
-                             $("#title_message").html(""" + errors + """);
-                          """).cmd
-           }
+      val description = in
+      val book : Books =  Books.create.description(description)
 
-        }
+      book.description.validate match{
+        case Nil =>
+          <p class="success" id={errorFieldId}>Valid</p>
+        case errors : List[FieldError] =>
+          S.error(errors)
+          <p class="error" id={errorFieldId}><lift:Msg id="books_description" /></p>
+      }
 
-        def check_description(in:String): JsCmd = {
+    }
+ 
+    
+    ////////////////////////////////////////////////////////////////////////////////////////////
+    
 
-           val description = in
-           val book : Books =  Books.create.description(description)
-
-           book.description.validate match{
-              case Nil =>
-                 S.notice( description + " is valid" )
-              case errors : List[FieldError] =>
-                 S.error(errors)
-           }
-           Noop
-        }
-
-        def cssSel =
-          "name=title" #> SHtml.onEvents("onchange", "onblur", "keyup")( check_title _ )(JsCmds.FocusOnLoad(SHtml.text(title, title = _, "id" -> "title", "class" -> "name"))) &
-          "name=description" #> SHtml.onEvents("onchange", "onblur", "keyup")( check_description _ )(SHtml.textarea(description, description = _)) &
-          "type=submit" #> SHtml.submit( "Add", doProcess, "class" -> "title", "disabled" -> "true" )
-
-        cssSel.apply(xhtml)
+    def cssSel =
+        
+    "name=title"  #> ajaxLiveTitle( "", x => Replace( "title_error", check_title(x,"Title: ", "title_error") ) ) andThen
+    "name=title"  #> SHtml.onSubmit(book.title.set(_))
+    
+    "name=description"  #> ajaxLiveDescription( "", x => Replace( "description_error", check_description(x,"Description: ", "description_error") ) ) andThen
+    "name=description"  #> SHtml.onSubmit(book.description.set(_))    
+    
+    "type=submit" #> SHtml.onSubmitUnit(doProcess)
+    
+    cssSel.apply(xhtml)
 
   }
 

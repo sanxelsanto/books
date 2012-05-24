@@ -76,5 +76,10 @@ class Boot {
 
     // Make a transaction span the whole HTTP request
     S.addAround(DB.buildLoanWrapper)
+    
+    //by santo, beta
+    LiftRules.noticesAutoFadeOut.default.set(
+      (notices: NoticeType.Value) =>Full(6 seconds, 6 seconds))     
+    
   }
 }

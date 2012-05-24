@@ -55,17 +55,16 @@ class BooksForm extends StatefulSnippet with Loggable{
 
            book.title.validate match{
               case Nil =>
+                 S.notice( title + " is valid" )
+                 
                  JE.JsRaw(""" 
-                             $("#title_message").html("You are good to go");
-                             $('#submit').attr("disabled", false);
+                             $("books_title").empty();
+                             $("#title_message").html("OK");
                  """).cmd
                  
               case errors : List[FieldError] =>
-                 //S.error(errors)
-                 println("errors: " + errors)
-                 JE.JsRaw("""
-                             $("#title_message").html(""" + Some(errors) + """);
-                          """).cmd
+                 JE.JsRaw(""" $("#title_message").empty(); """).cmd
+                 S.error(errors)
            }
 
         }
@@ -87,7 +86,7 @@ class BooksForm extends StatefulSnippet with Loggable{
         def cssSel =
           "name=title" #> SHtml.onEvents("onchange", "onblur", "keyup")( check_title _ )(JsCmds.FocusOnLoad(SHtml.text(title, title = _, "id" -> "title", "class" -> "name"))) &
           "name=description" #> SHtml.onEvents("onchange", "onblur", "keyup")( check_description _ )(SHtml.textarea(description, description = _)) &
-          "type=submit" #> SHtml.submit( "Add", doProcess, "class" -> "title", "disabled" -> "true" )
+          "type=submit" #> SHtml.submit( "Add", doProcess, "class" -> "title")//, "disabled" -> "true" 
 
         cssSel.apply(xhtml)
 

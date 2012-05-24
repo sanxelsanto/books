@@ -1,8 +1,10 @@
 #Source Dependencies
-#Wed May 16 11:53:18 CDT 2012
+#Thu May 24 10:10:22 CDT 2012
 src/main/scala/code/snippet/HelloWorld.scala=
 src/main/scala/bootstrap/liftweb/Boot.scala=
-src/main/scala/code/model/Books.scala=src/main/scala/code/snippet/BooksForm.scala\:src/main/scala/bootstrap/liftweb/Boot.scala
 src/main/scala/code/lib/DependencyFactory.scala=src/main/scala/code/snippet/HelloWorld.scala
+src/main/scala/code/model/Books.scala=src/main/scala/bootstrap/liftweb/Boot.scala\:src/main/scala/code/snippet/CreateBook.scala\:src/main/scala/code/snippet/BooksForm.scala
 src/main/scala/code/snippet/BooksForm.scala=
-src/main/scala/code/model/User.scala=src/main/scala/code/snippet/BooksForm.scala\:src/main/scala/bootstrap/liftweb/Boot.scala\:src/main/scala/code/model/Books.scala
+src/main/scala/code/model/User.scala=src/main/scala/bootstrap/liftweb/Boot.scala\:src/main/scala/code/model/Books.scala
+src/main/scala/code/snippet/CreateBook.scala=
+src/main/scala/code/snippet/AjaxExample.scala=

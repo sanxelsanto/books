@@ -4,14 +4,13 @@ package model
 import net.liftweb.mapper._
 import net.liftweb.util._
 import net.liftweb.common._
-import net.liftweb.mapper._
 import net.liftweb.http._
 import scala.xml.{NodeSeq,Text}
 
 
 object Books extends Books with LongKeyedMetaMapper[Books] with Logger{  
 
-  override def dbTableName = "recipes" // define the DB table name
+  override def dbTableName = "books" // define the DB table name
   override def fieldOrder = List(id, title, description, userid, timecreated, published)
 
 }
